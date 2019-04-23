@@ -119,7 +119,7 @@ class sExport
     /**
      * ...
      *
-     * @param int $articleId
+     * @param array $article
      *
      * @return string
      */

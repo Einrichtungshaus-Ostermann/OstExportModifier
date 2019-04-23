@@ -11,6 +11,9 @@
  * 1.1.0
  * - added unaice export modifier
  *
+ * 1.1.1
+ * - fixed phpdoc
+ *
  * @package   OstExportModifier
  *
  * @author    Eike Brandt-Warneke <e.brandt-warneke@ostermann.de>
