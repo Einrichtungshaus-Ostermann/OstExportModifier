@@ -27,6 +27,16 @@ class sExport
     /**
      * ...
      *
+     * @var array
+     */
+    static public $unaice = array(
+        'filter' => array(),
+        'variants' => array()
+    );
+
+    /**
+     * ...
+     *
      * @param Modules $modules
      */
     public function __construct(Modules $modules)
@@ -50,6 +60,8 @@ class sExport
 
         // register our custom modifier
         $sExport->sSmarty->registerPlugin('modifier', 'filteredCategory', [&$this, 'modifierFilteredCategory']);
+        $sExport->sSmarty->registerPlugin('modifier', 'uNaiceHeader', [&$this, 'modifierUNaiceHeader']);
+        $sExport->sSmarty->registerPlugin('modifier', 'uNaice', [&$this, 'modifierUNaice']);
     }
 
     /**
@@ -72,6 +84,77 @@ class sExport
             $breadcrumbs[] = $breadcrumbObj['name'];
         }
         return htmlspecialchars_decode(implode($separator, $breadcrumbs));
+    }
+
+    /**
+     * ...
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public function modifierUNaiceHeader($name)
+    {
+        // ...
+        $unaice = array(
+            'filter' => array(),
+            'variants' => array()
+        );
+
+        // get the filter options
+        $query = "
+            SELECT id, name
+            FROM s_filter_options
+            ORDER BY id ASC
+        ";
+        $unaice['filter'] = Shopware()->Db()->fetchPairs($query);
+
+        // save them
+        self::$unaice = $unaice;
+
+        // return as string
+        return implode($this->modules->Export()->sSettings['separator'], $unaice['filter']);
+    }
+
+    /**
+     * ...
+     *
+     * @param int $articleId
+     *
+     * @return string
+     */
+    public function modifierUNaice($article)
+    {
+        // get the article properties
+        $allProperties = Shopware()->Modules()->Articles()->sGetArticleProperties($article['articleID']);
+
+        // make them compatible
+        $properties = array();
+
+        // loop every default property
+        foreach ( $allProperties as $property ) {
+            // and save with id and value
+            $properties[$property['id']] = $property['value'];
+        }
+
+        // our output array mixed with all available filter options
+        $arr = array();
+
+        // loop every filter option
+        foreach ( self::$unaice['filter'] as $id => $name ) {
+            // do we have this one?
+            if ( !isset($properties[$id])) {
+                // we dont... add an empty entry
+                array_push($arr, "");
+                continue;
+            }
+
+            // add this filter value
+            array_push($arr, $properties[$id]);
+        }
+
+        // retur as string
+        return implode($this->modules->Export()->sSettings['separator'], $arr);
     }
 
     /**
